@@ -407,7 +407,9 @@ contract NameRegistry is
 
             // Commits cannot be re-submitted immediately to prevent griefing by re-submitting commits
             // to reset the REVEAL_DELAY clock
-            if (block.timestamp <= timestampOf[commit] + COMMIT_REPLAY_DELAY) revert CommitReplay();
+            if (block.timestamp <= timestampOf[commit] + COMMIT_REPLAY_DELAY) {
+                revert CommitReplay();
+            }
         }
 
         // Save the commit and start the REVEAL_DELAY clock
@@ -438,7 +440,9 @@ contract NameRegistry is
         unchecked {
             // Audit: verify that 60s is the right duration to use
             // Safety: makeCommit() sets commitTs to block.timestamp which cannot overflow
-            if (block.timestamp < commitTs + REVEAL_DELAY) revert InvalidCommit();
+            if (block.timestamp < commitTs + REVEAL_DELAY) {
+                revert InvalidCommit();
+            }
         }
 
         // ERC-721's require a unique token number for each fname token, and we calculate this by
@@ -534,7 +538,9 @@ contract NameRegistry is
         // Check that we are still in the renewable period, and have not passed into biddable
         unchecked {
             // Safety: expiryTs is a timestamp of a known calendar year and cannot overflow
-            if (block.timestamp >= expiryTs + RENEWAL_PERIOD) revert NotRenewable();
+            if (block.timestamp >= expiryTs + RENEWAL_PERIOD) {
+                revert NotRenewable();
+            }
         }
 
         if (block.timestamp < expiryTs) revert Registered();
@@ -693,7 +699,9 @@ contract NameRegistry is
         uint256 expiryTs = expiryOf[tokenId];
 
         // Expired names should not be transferrable by the previous owner
-        if (expiryTs != 0 && block.timestamp >= expiryOf[tokenId]) revert Expired();
+        if (expiryTs != 0 && block.timestamp >= expiryOf[tokenId]) {
+            revert Expired();
+        }
 
         super.transferFrom(from, to, tokenId);
     }
@@ -710,7 +718,9 @@ contract NameRegistry is
         uint256 expiryTs = expiryOf[tokenId];
 
         // Expired names should not be transferrable by the previous owner
-        if (expiryTs != 0 && block.timestamp >= expiryOf[tokenId]) revert Expired();
+        if (expiryTs != 0 && block.timestamp >= expiryOf[tokenId]) {
+            revert Expired();
+        }
 
         super.safeTransferFrom(from, to, tokenId, data);
     }
@@ -859,7 +869,9 @@ contract NameRegistry is
 
         unchecked {
             // Safety: _recoveryClock is always set to block.timestamp and cannot realistically overflow
-            if (block.timestamp < _recoveryClock + ESCROW_PERIOD) revert Escrow();
+            if (block.timestamp < _recoveryClock + ESCROW_PERIOD) {
+                revert Escrow();
+            }
         }
 
         // Assumption: Invariant 4 prevents this from going to address(0).
@@ -878,7 +890,9 @@ contract NameRegistry is
 
         // Perf: super.ownerOf is called instead of ownerOf since cancellation has no undesirable
         // side effects when expired and it saves some gas.
-        if (sender != super.ownerOf(tokenId) && sender != recoveryOf[tokenId]) revert Unauthorized();
+        if (sender != super.ownerOf(tokenId) && sender != recoveryOf[tokenId]) {
+            revert Unauthorized();
+        }
 
         // Check if there is a recovery to avoid emitting incorrect CancelRecovery events
         if (recoveryClockOf[tokenId] == 0) revert NoRecovery();
@@ -930,11 +944,17 @@ contract NameRegistry is
         // call msg.sender instead of _msgSender() since we don't need meta-tx for admin actions
         // and it reduces our attack surface area
         if (!hasRole(MODERATOR_ROLE, msg.sender)) revert NotModerator();
+        uint256 reclaimActionsLength = reclaimActions.length;
 
-        for (uint256 i = 0; i < reclaimActions.length; i++) {
+        for (uint256 i = 0; i < reclaimActionsLength;) {
             uint256 tokenId = reclaimActions[i].tokenId;
 
             address destination = reclaimActions[i].destination;
+
+            unchecked {
+                // Safety: i can never overflow because length is guaranteed to be <= reclaimActions.length
+                i++;
+            }
 
             uint256 _expiry = expiryOf[tokenId];
 
