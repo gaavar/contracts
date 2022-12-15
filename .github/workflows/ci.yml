@@ -54,6 +54,9 @@ jobs:
           forge --version
           forge build --sizes
 
+      - name: Run forge fmt check
+        run: forge fmt --check
+
       - name: Run forge tests
         run: forge test -vvv
 
