@@ -49,11 +49,9 @@ contract IdRegistryTestable is IdRegistry {
  * @dev BundleRegistryTestable exposes IdRegistry's private methods for test assertions.
  */
 contract BundleRegistryTestable is BundleRegistry {
-    constructor(
-        address idRegistry,
-        address nameRegistry,
-        address trustedCaller
-    ) BundleRegistry(idRegistry, nameRegistry, trustedCaller) {}
+    constructor(address idRegistry, address nameRegistry, address trustedCaller)
+        BundleRegistry(idRegistry, nameRegistry, trustedCaller)
+    {}
 
     function getTrustedCaller() public view returns (address) {
         return trustedCaller;

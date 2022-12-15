@@ -45,12 +45,7 @@ contract IdRegistryTest is Test {
                              REGISTER TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testRegister(
-        address alice,
-        address bob,
-        address recovery,
-        string calldata url
-    ) public {
+    function testRegister(address alice, address bob, address recovery, string calldata url) public {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         assertEq(idRegistry.getIdCounter(), 0);
 
@@ -66,12 +61,9 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.getRecoveryOf(1), recovery);
     }
 
-    function testCannotRegisterIfTrustedCallerOnly(
-        address alice,
-        address bob,
-        address recovery,
-        string calldata url
-    ) public {
+    function testCannotRegisterIfTrustedCallerOnly(address alice, address bob, address recovery, string calldata url)
+        public
+    {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         assertEq(idRegistry.getIdCounter(), 0);
 
@@ -107,12 +99,7 @@ contract IdRegistryTest is Test {
                          TRUSTED REGISTER TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testTrustedRegister(
-        address alice,
-        address trustedCaller,
-        address recovery,
-        string calldata url
-    ) public {
+    function testTrustedRegister(address alice, address trustedCaller, address recovery, string calldata url) public {
         vm.assume(trustedCaller != FORWARDER && recovery != FORWARDER);
         idRegistry.changeTrustedCaller(trustedCaller);
         assertEq(idRegistry.getIdCounter(), 0);
@@ -191,11 +178,7 @@ contract IdRegistryTest is Test {
                                HOME TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testChangeHome(
-        address alice,
-        address recovery,
-        string calldata url
-    ) public {
+    function testChangeHome(address alice, address recovery, string calldata url) public {
         vm.assume(alice != FORWARDER);
         _register(alice, recovery);
 
@@ -234,12 +217,9 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.idOf(bob), 1);
     }
 
-    function testTransferResetsRecoveryState(
-        address alice,
-        address bob,
-        address recovery,
-        address recoveryTarget
-    ) public {
+    function testTransferResetsRecoveryState(address alice, address bob, address recovery, address recoveryTarget)
+        public
+    {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         vm.assume(alice != bob);
         vm.assume(alice != recoveryTarget);
@@ -264,11 +244,7 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.getRecoveryClockOf(1), 0);
     }
 
-    function testCannotTransferToAddressWithId(
-        address alice,
-        address bob,
-        address recovery
-    ) public {
+    function testCannotTransferToAddressWithId(address alice, address bob, address recovery) public {
         vm.assume(alice != FORWARDER && bob != FORWARDER);
         vm.assume(alice != bob);
         _register(alice, recovery);
@@ -302,11 +278,7 @@ contract IdRegistryTest is Test {
                           CHANGE RECOVERY TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testChangeRecoveryAddress(
-        address alice,
-        address oldRecovery,
-        address newRecovery
-    ) public {
+    function testChangeRecoveryAddress(address alice, address oldRecovery, address newRecovery) public {
         vm.assume(alice != FORWARDER);
         _register(alice, oldRecovery);
 
@@ -353,11 +325,7 @@ contract IdRegistryTest is Test {
                          REQUEST RECOVERY TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testRequestRecovery(
-        address alice,
-        address bob,
-        address recovery
-    ) public {
+    function testRequestRecovery(address alice, address bob, address recovery) public {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         _register(alice, recovery);
         assertEq(idRegistry.getRecoveryClockOf(1), 0);
@@ -373,12 +341,9 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.getRecoveryDestinationOf(1), bob);
     }
 
-    function testRequestRecoveryOverridesPreviousRecovery(
-        address alice,
-        address bob,
-        address charlie,
-        address recovery
-    ) public {
+    function testRequestRecoveryOverridesPreviousRecovery(address alice, address bob, address charlie, address recovery)
+        public
+    {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         _register(alice, recovery);
         vm.prank(recovery);
@@ -419,11 +384,7 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.getRecoveryDestinationOf(1), address(0));
     }
 
-    function testCannotRequestRecoveryWithoutId(
-        address alice,
-        address bob,
-        address recoveryDestination
-    ) public {
+    function testCannotRequestRecoveryWithoutId(address alice, address bob, address recoveryDestination) public {
         vm.assume(alice != FORWARDER && bob != FORWARDER);
         vm.assume(alice != recoveryDestination);
         vm.assume(bob != address(0));
@@ -437,12 +398,7 @@ contract IdRegistryTest is Test {
                          COMPLETE RECOVERY TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testCompleteRecovery(
-        address alice,
-        address bob,
-        address recovery,
-        uint256 timestamp
-    ) public {
+    function testCompleteRecovery(address alice, address bob, address recovery, uint256 timestamp) public {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         vm.assume(alice != bob);
         vm.assume(timestamp > 0 && timestamp < type(uint256).max - ESCROW_PERIOD);
@@ -511,12 +467,9 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.getRecoveryClockOf(1), 0);
     }
 
-    function testCannotCompleteRecoveryWhenInEscrow(
-        address alice,
-        address bob,
-        address recovery,
-        uint256 timestamp
-    ) public {
+    function testCannotCompleteRecoveryWhenInEscrow(address alice, address bob, address recovery, uint256 timestamp)
+        public
+    {
         vm.assume(alice != FORWARDER && recovery != FORWARDER);
         vm.assume(alice != bob);
         vm.assume(timestamp > 0 && timestamp < type(uint256).max - ESCROW_PERIOD);
@@ -573,12 +526,9 @@ contract IdRegistryTest is Test {
                           CANCEL RECOVERY TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testCancelRecoveryFromCustodyAddress(
-        address alice,
-        address bob,
-        address recovery,
-        uint256 timestamp
-    ) public {
+    function testCancelRecoveryFromCustodyAddress(address alice, address bob, address recovery, uint256 timestamp)
+        public
+    {
         vm.assume(alice != FORWARDER && recovery != FORWARDER && bob != FORWARDER);
         vm.assume(alice != bob);
         vm.assume(timestamp > 0 && timestamp < type(uint256).max - ESCROW_PERIOD);
@@ -611,12 +561,9 @@ contract IdRegistryTest is Test {
         assertEq(idRegistry.getRecoveryClockOf(1), 0);
     }
 
-    function testCancelRecoveryFromRecoveryAddress(
-        address alice,
-        address bob,
-        address recovery,
-        uint256 timestamp
-    ) public {
+    function testCancelRecoveryFromRecoveryAddress(address alice, address bob, address recovery, uint256 timestamp)
+        public
+    {
         vm.assume(alice != FORWARDER && recovery != FORWARDER && bob != FORWARDER);
         vm.assume(alice != bob);
         vm.assume(timestamp > 0 && timestamp < type(uint256).max - ESCROW_PERIOD);

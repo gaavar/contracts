@@ -319,12 +319,10 @@ contract NameRegistry is
      * @param _vault       The address that funds can be withdrawn to
      * @param _pool        The address that fnames can be reclaimed to
      */
-    function initialize(
-        string calldata _tokenName,
-        string calldata _tokenSymbol,
-        address _vault,
-        address _pool
-    ) external initializer {
+    function initialize(string calldata _tokenName, string calldata _tokenSymbol, address _vault, address _pool)
+        external
+        initializer
+    {
         __ERC721_init(_tokenName, _tokenSymbol);
 
         __Pausable_init();
@@ -369,12 +367,11 @@ contract NameRegistry is
      * @param to     The address that will own the fname
      * @param secret A secret that is known only to the caller
      */
-    function generateCommit(
-        bytes16 fname,
-        address to,
-        bytes32 secret,
-        address recovery
-    ) public pure returns (bytes32 commit) {
+    function generateCommit(bytes16 fname, address to, bytes32 secret, address recovery)
+        public
+        pure
+        returns (bytes32 commit)
+    {
         // Perf: Do not validate to != address(0) because it happens during register/mint
 
         _validateName(fname);
@@ -414,12 +411,7 @@ contract NameRegistry is
      * @param secret   The secret value in the commitment
      * @param recovery The address which can recovery the fname if the custody address is lost
      */
-    function register(
-        bytes16 fname,
-        address to,
-        bytes32 secret,
-        address recovery
-    ) external payable {
+    function register(bytes16 fname, address to, bytes32 secret, address recovery) external payable {
         bytes32 commit = generateCommit(fname, to, secret, recovery);
 
         uint256 _fee = fee;
@@ -463,7 +455,7 @@ contract NameRegistry is
         if (overpayment > 0) {
             // Perf: Call msg.sender instead of _msgSender() to save ~100 gas b/c we don't need meta-tx
             // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = msg.sender.call{value: overpayment}("");
+            (bool success,) = msg.sender.call{value: overpayment}("");
             if (!success) revert CallFailed();
         }
     }
@@ -479,13 +471,10 @@ contract NameRegistry is
      * @param inviter the fid of the user who invited the new user to get an fname
      * @param invitee the fid of the user who was invited to get an fname
      */
-    function trustedRegister(
-        bytes16 fname,
-        address to,
-        address recovery,
-        uint256 inviter,
-        uint256 invitee
-    ) external payable {
+    function trustedRegister(bytes16 fname, address to, address recovery, uint256 inviter, uint256 invitee)
+        external
+        payable
+    {
         // Trusted Register can only be called during the invite period (when trustedOnly = 1)
         if (trustedOnly == 0) revert NotInvitable();
 
@@ -548,7 +537,7 @@ contract NameRegistry is
         if (overpayment > 0) {
             // Perf: Call msg.sender instead of _msgSender() to save ~100 gas b/c we don't need meta-tx
             // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = msg.sender.call{value: overpayment}("");
+            (bool success,) = msg.sender.call{value: overpayment}("");
             if (!success) revert CallFailed();
         }
     }
@@ -562,11 +551,7 @@ contract NameRegistry is
      * @param tokenId  The uint256 representation of the fname to bid on
      * @param recovery The address which can recovery the fname if the custody address is lost
      */
-    function bid(
-        address to,
-        uint256 tokenId,
-        address recovery
-    ) external payable {
+    function bid(address to, uint256 tokenId, address recovery) external payable {
         // Check that the tokenID was previously registered
         uint256 expiryTs = expiryOf[tokenId];
         if (expiryTs == 0) revert Registrable();
@@ -627,11 +612,9 @@ contract NameRegistry is
 
             // Safety/Audit: the below cannot intuitively underflow or overflow given the ranges,
             // but needs proof
-            price =
-                BID_START_PRICE.mulWadDown(
-                    uint256(FixedPointMathLib.powWad(int256(BID_PERIOD_DECREASE_UD60X18), periodsSD59x18))
-                ) +
-                fee;
+            price = BID_START_PRICE.mulWadDown(
+                uint256(FixedPointMathLib.powWad(int256(BID_PERIOD_DECREASE_UD60X18), periodsSD59x18))
+            ) + fee;
         }
 
         if (msg.value < price) revert InsufficientFunds();
@@ -656,7 +639,7 @@ contract NameRegistry is
         if (overpayment > 0) {
             // Perf: Call msg.sender instead of _msgSender() to save ~100 gas b/c we don't need meta-tx
             // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = msg.sender.call{value: overpayment}("");
+            (bool success,) = msg.sender.call{value: overpayment}("");
             if (!success) revert CallFailed();
         }
     }
@@ -690,11 +673,7 @@ contract NameRegistry is
      * @param to      The address to transfer the fname to
      * @param tokenId The uint256 representation of the fname to transfer
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public override {
+    function transferFrom(address from, address to, uint256 tokenId) public override {
         uint256 expiryTs = expiryOf[tokenId];
 
         // Expired names should not be transferrable by the previous owner
@@ -711,12 +690,7 @@ contract NameRegistry is
      * @param tokenId  The uint256 representation of the fname to transfer
      * @param data     Additional data with no specified format, sent in call to `to`
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) public override {
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public override {
         uint256 expiryTs = expiryOf[tokenId];
 
         // Expired names should not be transferrable by the previous owner
@@ -740,7 +714,7 @@ contract NameRegistry is
         _validateName(fname);
 
         // Step back from the last byte to find the first non-zero byte
-        for (uint256 i = 15; ; ) {
+        for (uint256 i = 15;;) {
             if (uint8(fname[i]) != 0) {
                 lastCharIdx = i;
                 break;
@@ -758,7 +732,7 @@ contract NameRegistry is
         // Construct a new bytes[] with the valid fname characters.
         bytes memory fnameBytes = new bytes(lastCharIdx + 1);
 
-        for (uint256 j = 0; j <= lastCharIdx; ) {
+        for (uint256 j = 0; j <= lastCharIdx;) {
             fnameBytes[j] = fname[j];
 
             unchecked {
@@ -773,22 +747,14 @@ contract NameRegistry is
     /**
      * @dev Hook that ensures that token transfers cannot occur when the contract is paused.
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override whenNotPaused {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
     /**
      * @dev Hook that ensures that recovery address is reset whenever a transfer occurs.
      */
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override {
+    function _afterTokenTransfer(address from, address to, uint256 tokenId) internal override {
         super._afterTokenTransfer(from, to, tokenId);
 
         // Checking state before clearing is more gas-efficient than always clearing
@@ -1018,7 +984,7 @@ contract NameRegistry is
         if (address(this).balance < amount) revert InsufficientFunds();
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, ) = vault.call{value: amount}("");
+        (bool success,) = vault.call{value: amount}("");
         if (!success) revert CallFailed();
     }
 
@@ -1051,20 +1017,25 @@ contract NameRegistry is
     function _msgSender()
         internal
         view
-        override(ContextUpgradeable, ERC2771ContextUpgradeable)
+        override (ContextUpgradeable, ERC2771ContextUpgradeable)
         returns (address sender)
     {
         sender = ERC2771ContextUpgradeable._msgSender();
     }
 
-    function _msgData() internal view override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (bytes calldata) {
+    function _msgData()
+        internal
+        view
+        override (ContextUpgradeable, ERC2771ContextUpgradeable)
+        returns (bytes calldata)
+    {
         return ERC2771ContextUpgradeable._msgData();
     }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(AccessControlUpgradeable, ERC721Upgradeable)
+        override (AccessControlUpgradeable, ERC721Upgradeable)
         returns (bool)
     {
         return ERC721Upgradeable.supportsInterface(interfaceId);
@@ -1097,7 +1068,7 @@ contract NameRegistry is
         // If the name begins with a hyphen, reject it
         if (uint8(fname[0]) == 45) revert InvalidName();
 
-        for (uint256 i = 0; i < length; ) {
+        for (uint256 i = 0; i < length;) {
             uint8 charInt = uint8(fname[i]);
 
             unchecked {
